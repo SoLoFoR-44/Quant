@@ -257,40 +257,7 @@ local drawing = {} do
 
 							if signals.mouse1down and signals.MouseButton1Click then
 								signals.mouse1down = false
-								signals.MouseButton1Click:Fire()
-							end
-						end
-
-						if input.UserInputType == Enum.UserInputType.MouseButton2 and not mouseoverhighersquare(obj) then
-							if signals.MouseButton2Clicked then
-								signals.MouseButton2Clicked:Fire()
-							end
-
-							if signals.MouseButton2Up then
-								signals.MouseButton2Up:Fire()
-							end
-						end
-					end
-				end
-			end
-		end
-	end)
-
-	services.InputService.InputChanged:Connect(function(input, gpe)
-if input.UserInputType == Enum.UserInputType.MouseWheel or input.UserInputType == Enum.UserInputType.MouseMovement then
-    local overAny = false
-    for obj, _ in next, objsignals do
-        if objexists[obj] and obj.Visible and ismouseover(obj) and not mouseoverhighersquare(obj) then
-            overAny = true
-            break
-        end
-    end
-    if not overAny then
-        return
-    end
-end
-
-services.InputService.InputChanged:Connect(function(input, gpe)
+								services.InputService.InputChanged:Connect(function(input, gpe)
 
     if input.UserInputType == Enum.UserInputType.MouseWheel 
     or input.UserInputType == Enum.UserInputType.MouseMovement then
@@ -298,6 +265,25 @@ services.InputService.InputChanged:Connect(function(input, gpe)
         for obj, _ in next, objsignals do
             if objexists[obj] and obj.Visible and ismouseover(obj) and not mouseoverhighersquare(obj) then
                 overAny = true
+                break
+            end
+        end
+        if not overAny then
+            return
+        end
+    end
+
+    for obj, signals in next, objsignals do
+        if objexists[obj] and obj.Visible and (signals.InputChanged or signals.MouseEnter or signals.MouseLeave) then
+            if ismouseover(obj) then
+                if signals.InputChanged then
+                    signals.InputChanged:Fire(input, gpe)
+                end
+            end
+        end
+    end
+end)
+
                 break
             end
         end
