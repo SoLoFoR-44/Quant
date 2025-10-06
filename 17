@@ -214,112 +214,96 @@ local drawing = {} do
 	local objsignals = {}
 	local objexists = {}
 
-	local function mouseoverhighersquare(obj)
-		for _, square in next, squares do
-			if square.Visible == true and square.ZIndex > obj.ZIndex then
-				if ismouseover(square) then
-					return true
-				end
-			end
-		end
-	end
-
-	services.InputService.InputEnded:Connect(function(input, gpe)
-    if input.UserInputType == Enum.UserInputType.MouseButton2 then
-        local overAny = false
-        for obj, _ in next, objsignals do
-            if objexists[obj] and obj.Visible and ismouseover(obj) and not mouseoverhighersquare(obj) then
-                overAny = true
-                break
-            end
-        end
-        if not overAny then
-            return
-        end
-    end
-
-		for obj, signals in next, objsignals do
-			if objexists[obj] then
-				if signals.inputbegan[input] then
-					signals.inputbegan[input] = false
-
-					if signals.InputEnded then
-						signals.InputEnded:Fire(input, gpe)
-					end
-				end
-
-				if obj.Visible then
-					if ismouseover(obj) then
-						if input.UserInputType == Enum.UserInputType.MouseButton1 and not mouseoverhighersquare(obj) then
-							if signals.MouseButton1Up then
-								signals.MouseButton1Up:Fire()
-							end
-
-							if signals.mouse1down and signals.MouseButton1Click then
-								signals.mouse1down = false
-								services.InputService.InputChanged:Connect(function(input, gpe)
-
-    if input.UserInputType == Enum.UserInputType.MouseWheel 
-    or input.UserInputType == Enum.UserInputType.MouseMovement then
-        local overAny = false
-        for obj, _ in next, objsignals do
-            if objexists[obj] and obj.Visible and ismouseover(obj) and not mouseoverhighersquare(obj) then
-                overAny = true
-                break
-            end
-        end
-        if not overAny then
-            return
-        end
-    end
-
-    for obj, signals in next, objsignals do
-        if objexists[obj] and obj.Visible and (signals.InputChanged or signals.MouseEnter or signals.MouseLeave) then
-            if ismouseover(obj) then
-                if signals.InputChanged then
-                    signals.InputChanged:Fire(input, gpe)
-                end
-            end
-        end
-    end
-end)
-
-                break
-            end
-        end
-        if not overAny then
-            return
-        end
-    end
-
-    for obj, signals in next, objsignals do
-	if objexists[obj] and obj.Visible and (signals.MouseEnter or signals.MouseMove or signals.InputChanged or signals.MouseLeave) then
-		if ismouseover(obj) then
-			if not signals.mouseentered then
-				signals.mouseentered = true
-
-				if signals.MouseEnter then
-					signals.MouseEnter:Fire(input.Position)
-				end
-			end
-
-			if signals.MouseMoved then
-				signals.MouseMoved:Fire(input.Position)
-			end
-
-			if signals.InputChanged then
-				signals.InputChanged:Fire(input, gpe)
-			end
-		elseif signals.mouseentered then
-			signals.mouseentered = false
-
-			if signals.MouseLeave then
-				signals.MouseLeave:Fire(input.Position)
+local function mouseoverhighersquare(obj)
+	for _, square in next, squares do
+		if square.Visible == true and square.ZIndex > obj.ZIndex then
+			if ismouseover(square) then
+				return true
 			end
 		end
 	end
 end
-end 
+
+services.InputService.InputEnded:Connect(function(input, gpe)
+	if input.UserInputType == Enum.UserInputType.MouseButton2 then
+		local overAny = false
+		for obj, _ in next, objsignals do
+			if objexists[obj] and obj.Visible and ismouseover(obj) and not mouseoverhighersquare(obj) then
+				overAny = true
+				break
+			end
+		end
+		if not overAny then
+			return
+		end
+	end
+
+	for obj, signals in next, objsignals do
+		if objexists[obj] then
+			if signals.inputbegan[input] then
+				signals.inputbegan[input] = false
+
+				if signals.InputEnded then
+					signals.InputEnded:Fire(input, gpe)
+				end
+			end
+
+			if obj.Visible and ismouseover(obj) then
+				if input.UserInputType == Enum.UserInputType.MouseButton1 and not mouseoverhighersquare(obj) then
+					if signals.MouseButton1Up then
+						signals.MouseButton1Up:Fire()
+					end
+
+					if signals.mouse1down and signals.MouseButton1Click then
+						signals.mouse1down = false
+						signals.MouseButton1Click:Fire()
+					end
+				end
+			end
+		end
+	end
+end)
+
+services.InputService.InputChanged:Connect(function(input, gpe)
+	if input.UserInputType == Enum.UserInputType.MouseWheel or input.UserInputType == Enum.UserInputType.MouseMovement then
+		local overAny = false
+		for obj, _ in next, objsignals do
+			if objexists[obj] and obj.Visible and ismouseover(obj) and not mouseoverhighersquare(obj) then
+				overAny = true
+				break
+			end
+		end
+		if not overAny then
+			return
+		end
+	end
+
+	for obj, signals in next, objsignals do
+		if objexists[obj] and obj.Visible and (signals.InputChanged or signals.MouseEnter or signals.MouseLeave or signals.MouseMove) then
+			if ismouseover(obj) then
+				if not signals.mouseentered then
+					signals.mouseentered = true
+					if signals.MouseEnter then
+						signals.MouseEnter:Fire(input.Position)
+					end
+				end
+
+				if signals.MouseMoved then
+					signals.MouseMoved:Fire(input.Position)
+				end
+
+				if signals.InputChanged then
+					signals.InputChanged:Fire(input, gpe)
+				end
+			elseif signals.mouseentered then
+				signals.mouseentered = false
+				if signals.MouseLeave then
+					signals.MouseLeave:Fire(input.Position)
+				end
+			end
+		end
+	end
+end)
 
 services.InputService.InputBegan:Connect(function(input, gpe)
 	if input.UserInputType == Enum.UserInputType.MouseButton2 then
@@ -357,61 +341,17 @@ services.InputService.InputBegan:Connect(function(input, gpe)
 	end
 end)
 
-	function drawing:new(shape)
-		local obj = Drawing.new(shape)
-		objexists[obj] = true
-		obj.Visible = false
-		local signalnames = {}
+function drawing:new(shape)
+	local obj = Drawing.new(shape)
+	objexists[obj] = true
+	obj.Visible = false
+	local signalnames = {}
 
-		local listfunc
-		local scrollfunc
-		local refreshscrolling
+	local listfunc
+	local scrollfunc
+	local refreshscrolling
 
-		objconnections[obj] = {}
-
-		if shape == "Square" then
-			table.insert(squares, obj)
-
-			signalnames = {
-				MouseButton1Click = signal.new(),
-				MouseButton1Up = signal.new(),
-				MouseButton1Down = signal.new(),
-				MouseButton2Click = signal.new(),
-				MouseButton2Up = signal.new(),
-				MouseButton2Down = signal.new(),
-				InputBegan = signal.new(),
-				InputEnded = signal.new(),
-				InputChanged = signal.new(),
-				MouseEnter = signal.new(),
-				MouseLeave = signal.new(),
-				MouseMoved = signal.new()
-			}
-
-			local attemptedscrollable = false
-
-			scrollfunc = function(self)
-				if listobjs[self] then
-					scrollpositions[self] = 0
-					scrollobjs[self] = true
-
-					self.ClipsDescendants = true
-
-					local function scroll(amount)
-						local totalclippedobjs, currentclippedobj, docontinue = 0, nil, false
-
-						for i, object in next, listchildren[self] do
-							if amount == 1 then
-								if object.Position.Y > mtobjs[self].Position.Y then
-									if not istouching(object.Position, object.Size, mtobjs[self].Position, mtobjs[self].Size) then
-										if not currentclippedobj then
-											currentclippedobj = object
-										end
-
-										totalclippedobjs = totalclippedobjs + 1
-										docontinue = true
-									end
-								end
-							end
+	objconnections[obj] = {}
 
 							if amount == -1 then
 								if object.Position.Y <= mtobjs[self].Position.Y then
