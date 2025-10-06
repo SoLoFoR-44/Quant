@@ -265,44 +265,44 @@ services.InputService.InputEnded:Connect(function(input, gpe)
 end)
 
 services.InputService.InputChanged:Connect(function(input, gpe)
-	if input.UserInputType == Enum.UserInputType.MouseWheel or input.UserInputType == Enum.UserInputType.MouseMovement then
-		local overAny = false
-		for obj, _ in next, objsignals do
-			if objexists[obj] and obj.Visible and ismouseover(obj) and not mouseoverhighersquare(obj) then
-				overAny = true
-				break
-			end
-		end
-		if not overAny then
-			return
-		end
-	end
+    if input.UserInputType == Enum.UserInputType.MouseWheel or input.UserInputType == Enum.UserInputType.MouseMovement then
+        local overAny = false
+        for obj, _ in next, objsignals do
+            if objexists[obj] and obj.Visible and ismouseover(obj) and not mouseoverhighersquare(obj) then
+                overAny = true
+                break
+            end
+        end
+        if not overAny then
+            return
+        end
+    end
 
-	for obj, signals in next, objsignals do
-		if objexists[obj] and obj.Visible and (signals.InputChanged or signals.MouseEnter or signals.MouseLeave or signals.MouseMove) then
-			if ismouseover(obj) then
-				if not signals.mouseentered then
-					signals.mouseentered = true
-					if signals.MouseEnter then
-						signals.MouseEnter:Fire(input.Position)
-					end
-				end
+    for obj, signals in next, objsignals do
+        if objexists[obj] and obj.Visible and (signals.InputChanged or signals.MouseEnter or signals.MouseLeave or signals.MouseMove) then
+            if ismouseover(obj) then
+                if not signals.mouseentered then
+                    signals.mouseentered = true
+                    if signals.MouseEnter then
+                        signals.MouseEnter:Fire(input.Position)
+                    end
+                end
 
-				if signals.MouseMoved then
-					signals.MouseMoved:Fire(input.Position)
-				end
+                if signals.MouseMoved then
+                    signals.MouseMoved:Fire(input.Position)
+                end
 
-				if signals.InputChanged then
-					signals.InputChanged:Fire(input, gpe)
-				end
-			elseif signals.mouseentered then
-				signals.mouseentered = false
-				if signals.MouseLeave then
-					signals.MouseLeave:Fire(input.Position)
-				end
-			end
-		end
-	end
+                if signals.InputChanged then
+                    signals.InputChanged:Fire(input, gpe)
+                end
+            elseif signals.mouseentered then
+                signals.mouseentered = false
+                if signals.MouseLeave then
+                    signals.MouseLeave:Fire(input.Position)
+                end
+            end
+        end
+    end
 end)
 
 services.InputService.InputBegan:Connect(function(input, gpe)
@@ -1140,8 +1140,10 @@ local themes = {
 	}
 }
 
-
 -- Ensure compatibility: create QuantHub theme alias if missing
+if not themes.QuantHub then themes.QuantHub = table.clone(themes.AirHub) end
+
+-- Ensure QuantHub alias exists
 if not themes.QuantHub then themes.QuantHub = table.clone(themes.AirHub) end
 
 local themeobjects = {}
@@ -1637,7 +1639,6 @@ function library.createdropdown(holder, content, flag, callback, default, max, s
 		Parent = contentframe,
 		Data = library.gradient
 	})
-
 
 	local contentholder = utility.create("Square", {
 		Transparency = 0,
