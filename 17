@@ -319,7 +319,7 @@ end)
 		end
 	end
 end
-end) 
+end 
 
 services.InputService.InputBegan:Connect(function(input, gpe)
 	if input.UserInputType == Enum.UserInputType.MouseButton2 then
