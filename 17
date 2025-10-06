@@ -293,77 +293,69 @@ end)
     end
 
     for obj, signals in next, objsignals do
-        if objexists[obj] and obj.Visible and (signals.MouseEnter or signals.MouseMove or signals.InputChanged or signals.MouseLeave) then
-            if ismouseover(obj) then
-                if not signals.mouseentered then
-                    signals.mouseentered = true
+	if objexists[obj] and obj.Visible and (signals.MouseEnter or signals.MouseMove or signals.InputChanged or signals.MouseLeave) then
+		if ismouseover(obj) then
+			if not signals.mouseentered then
+				signals.mouseentered = true
 
-                    if signals.MouseEnter then
-                        signals.MouseEnter:Fire(input.Position)
-                    end
+				if signals.MouseEnter then
+					signals.MouseEnter:Fire(input.Position)
+				end
+			end
 
-                    if signals.MouseMoved then
-                        signals.MouseMoved:Fire(input.Position)
-                    end
-                end
+			if signals.MouseMoved then
+				signals.MouseMoved:Fire(input.Position)
+			end
 
-                if signals.InputChanged then
-                    signals.InputChanged:Fire(input, gpe)
-                end
-            elseif signals.mouseentered then
-                signals.mouseentered = false
+			if signals.InputChanged then
+				signals.InputChanged:Fire(input, gpe)
+			end
+		elseif signals.mouseentered then
+			signals.mouseentered = false
 
-                if signals.MouseLeave then
-                    signals.MouseLeave:Fire(input.Position)
-                end
-            end
-        end
-    end
-end)
+			if signals.MouseLeave then
+				signals.MouseLeave:Fire(input.Position)
+			end
+		end
+	end
+end
+end) 
 
-	services.InputService.InputBegan:Connect(function(input, gpe)
+services.InputService.InputBegan:Connect(function(input, gpe)
+	if input.UserInputType == Enum.UserInputType.MouseButton2 then
+		local overAny = false
+		for obj, _ in next, objsignals do
+			if objexists[obj] and obj.Visible and ismouseover(obj) and not mouseoverhighersquare(obj) then
+				overAny = true
+				break
+			end
+		end
+		if not overAny then
+			return
+		end
+	end
 
-    if input.UserInputType == Enum.UserInputType.MouseButton2 then
-        local overAny = false
-        for obj, _ in next, objsignals do
-            if objexists[obj] and obj.Visible and ismouseover(obj) and not mouseoverhighersquare(obj) then
-                overAny = true
-                break
-            end
-        end
-        if not overAny then
-            return 
-        end
-    end
+	for obj, signals in next, objsignals do
+		if objexists[obj] and obj.Visible and ismouseover(obj) and not mouseoverhighersquare(obj) then
+			signals.inputbegan[input] = true
 
-		for obj, signals in next, objsignals do
-			if objexists[obj] then
-				if obj.Visible then
-					if ismouseover(obj) and not mouseoverhighersquare(obj) then 
-						signals.inputbegan[input] = true
+			if signals.InputBegan then
+				signals.InputBegan:Fire(input, gpe)
+			end
 
-						if signals.InputBegan then
-							signals.InputBegan:Fire(input, gpe)
-						end
-
-						if input.UserInputType == Enum.UserInputType.MouseButton1 and (not mouseoverhighersquare(obj) or obj.Transparency == 0) then
-							signals.mouse1down = true
-
-							if signals.MouseButton1Down then
-								signals.MouseButton1Down:Fire()
-							end
-						end
-
-						if input.UserInputType == Enum.UserInputType.MouseButton2 and (not mouseoverhighersquare(obj) or obj.Transparency == 0) then
-							if signals.MouseButton2Down then
-								signals.MouseButton2Down:Fire()
-							end
-						end
-					end
+			if input.UserInputType == Enum.UserInputType.MouseButton1 then
+				signals.mouse1down = true
+				if signals.MouseButton1Down then
+					signals.MouseButton1Down:Fire()
+				end
+			elseif input.UserInputType == Enum.UserInputType.MouseButton2 then
+				if signals.MouseButton2Down then
+					signals.MouseButton2Down:Fire()
 				end
 			end
 		end
-	end)
+	end
+end)
 
 	function drawing:new(shape)
 		local obj = Drawing.new(shape)
